@@ -245,12 +245,14 @@ class Repository(object):
     
     def get_employees_report(self):
         all = self._conn.execute(""" 
-            SELECT employees.name , employees.salary , branches.location , SUM(COALESCE(activities.quantity , 0))
+            SELECT employees.name , employees.salary , branches.location , SUM(ABS(COALESCE(activities.quantity * products.price, 0)))
             FROM employees
             LEFT JOIN branches 
                 ON employees.branche = branches.id
             LEFT JOIN activities  
                 ON activities.activator_id = employees.id 
+            LEFT OUTER JOIN products
+                ON activities.product_id = products.id
             GROUP BY name ORDER BY name""").fetchall()
         return [Employees_report(*row) for row in all] 
 
